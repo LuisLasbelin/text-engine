@@ -79,7 +79,7 @@ let setup = () => {
 // (optionally accepts a name for the save)
 let save = (name = 'save') => {
   localStorage.setItem(name, JSON.stringify(inputs));
-  const line = name.length ? `Game saved as "${name}".` : `Game saved.`;
+  const line = name.length ? `Progreso guardado como "${name}".` : `Progreso guardado.`;
   println(line);
 };
 
@@ -89,13 +89,13 @@ let load = (name = 'save') => {
   let save = localStorage.getItem(name);
 
   if (!save) {
-    println(`Save file not found.`);
+    println(`Archivo de guardado no encontrado.`);
     return;
   }
 
   // if the disk provided is an object rather than a factory function, the game state must be reset by reloading
   if (typeof diskFactory !== 'function' && inputs.length) {
-    println(`You cannot load this disk in the middle of the game. Please reload the browser, then run the **LOAD** command again.`);
+    println(`No puedes cargarlo en mitad de la ejecución. Recarga el navegador y utiliza **LOAD**.`);
     return;
   }
 
@@ -105,7 +105,7 @@ let load = (name = 'save') => {
 
   applyInputs(save);
 
-  const line = name.length ? `Game "${name}" was loaded.` : `Game loaded.`;
+  const line = name.length ? `Progreso "${name}" ha sido cargado.` : `Progreso cargado.`;
   println(line);
 };
 
@@ -113,14 +113,14 @@ let load = (name = 'save') => {
 let exportSave = (name) => {
   const filename = `${name.length ? name : 'text-engine-save'}.txt`;
   saveFile(JSON.stringify(inputs), filename);
-  println(`Game exported to "${filename}".`);
+  println(`Progreso exportado a "${filename}".`);
 };
 
 // import a previously exported game from disk
 let importSave = () => {
   // if the disk provided is an object rather than a factory function, the game state must be reset by reloading
   if (typeof diskFactory !== 'function' && inputs.length) {
-    println(`You cannot load this disk in the middle of the game. Please reload the browser, then run the **LOAD** command again.`);
+    println(`No puedes cargarlo en mitad de la ejecución. Recarga el navegador y utiliza **LOAD**.`);
     return;
   }
 
@@ -136,7 +136,7 @@ let importSave = () => {
       inputsPos = 0;
       loadDisk();
       applyInputs(fr.result);
-      println(`Game "${file.name}" was loaded.`);
+      println(`Disco "${file.name}" cargado.`);
       input.remove();
     };
 
@@ -198,11 +198,11 @@ let inv = () => {
   const items = disk.inventory.filter(item => !item.isHidden);
 
   if (!items.length) {
-    println(`You don't have any items in your inventory.`);
+    println(`No hay bloques de datos en tu inventario.`);
     return;
   }
 
-  println(`You have the following items in your inventory:`);
+  println(`Tienes los siguientes bloques de datos inventario:`);
   items.forEach(item => {
     println(`${bullet} ${getName(item.name)}`);
   });
@@ -221,7 +221,7 @@ let look = () => {
 
 // look in the passed way
 // string -> nothing
-let lookThusly = (str) => println(`You look ${str}.`);
+let lookThusly = (str) => println(`Analizas ${str}.`);
 
 // look at the passed item or character
 // array -> nothing
@@ -234,7 +234,7 @@ let lookAt = (args) => {
     if (item.desc) {
       println(item.desc);
     } else {
-      println(`You don\'t notice anything remarkable about it.`);
+      println(`No hay nada destacable sobre el bloque de datos.`);
     }
 
     if (typeof(item.onLook) === 'function') {
@@ -243,22 +243,18 @@ let lookAt = (args) => {
   } else {
     const character = getCharacter(name, getCharactersInRoom(disk.roomId));
     if (character) {
-      // Show character image if available.
-      println(character.img, 'img');
-
       // Look at a character.
       if (character.desc) {
         println(character.desc);
       } else {
-        println(`You don't notice anything remarkable about them.`);
+        println(`No hay nada destacable sobre la entidad.`);
       }
-
 
       if (typeof(character.onLook) === 'function') {
         character.onLook({disk, println, getRoom, enterRoom, item});
       }
     } else {
-      println(`You don't see any such thing.`);
+      println(`No existe aquí.`);
     }
   }
 };
@@ -269,11 +265,11 @@ let go = () => {
   const exits = room.exits.filter(exit => !exit.isHidden);
 
   if (!exits) {
-    println(`There's nowhere to go.`);
+    println(`No hay nodos abiertos.`);
     return;
   }
 
-  println(`Where would you like to go? Available directions are:`);
+  println(`Las direcciones con nodos abiertos son:`);
   exits.forEach((exit) => {
     const rm = getRoom(exit.id);
 
@@ -319,7 +315,7 @@ let goDir = (dir) => {
   const exits = room.exits;
 
   if (!exits) {
-    println(`There's nowhere to go.`);
+    println(`No hay nodos disponibles.`);
     return;
   }
 
@@ -330,7 +326,7 @@ let goDir = (dir) => {
     if (shortcuts[dir]) {
       goDir(shortcuts[dir]);
     } else {
-      println(`There is no exit in that direction.`);
+      println(`No hay nodos en esa dirección.`);
     }
     return;
   }
@@ -366,7 +362,7 @@ let talk = () => {
   }
 
   // list characters in the room
-  println(`You can talk TO someone or ABOUT some topic.`);
+  println(`Puedes hablar a alguien sobre un tema usando **TALK TO X ABOUT Y**`);
   chars();
 };
 
@@ -376,7 +372,7 @@ let talkToOrAboutX = (preposition, x) => {
   const room = getRoom(disk.roomId);
 
   if (preposition !== 'to' && preposition !== 'about') {
-    println(`You can talk TO someone or ABOUT some topic.`);
+    println(`Puedes hablar a alguien sobre un tema usando **TALK TO X ABOUT Y**`);
     return;
   }
 
@@ -395,18 +391,18 @@ let talkToOrAboutX = (preposition, x) => {
       const availableTopics = topics.filter(topic => topicIsAvailable(character, topic));
 
       if (availableTopics.length) {
-        println(`What would you like to discuss?`);
+        println(`¿Sobre qué tema deseas conversar?`);
         availableTopics.forEach(topic => println(`${bullet} ${topic.option ? topic.option : topic.keyword.toUpperCase()}`));
-        println(`${bullet} NOTHING`);
+        println(`${bullet} NADA`);
       } else {
         // if character isn't handling onTalk, let the player know they are out of topics
         if (!character.onTalk) {
-          println(`You have nothing to discuss with ${getName(character.name)} at this time.`);
+          println(`No tienes nada que conversar con la entidad ${getName(character.name)} en este momento.`);
         }
         endConversation();
       }
     } else if (Object.keys(topics).length) {
-      println(`Select a response:`);
+      println(`Selecciona una respuesta:`);
       Object.keys(topics).forEach(topic => println(`${bullet} ${topics[topic].option}`));
     } else {
       endConversation();
@@ -415,17 +411,17 @@ let talkToOrAboutX = (preposition, x) => {
 
   if (preposition === 'to') {
     if (!getCharacter(x)) {
-      println(`There is no one here by that name.`);
+      println(`No hay ninguna entidad con ese alias.`);
       return;
     }
 
     if (!getCharacter(getName(x), getCharactersInRoom(room.id))) {
-      println(`There is no one here by that name.`);
+      println(`No hay ninguna entidad con ese alias.`);
       return;
     }
 
     if (!character.topics) {
-      println(`You have nothing to discuss with ${getName(character.name)} at this time.`);
+      println(`No tienes nada que conversar con la entidad ${getName(character.name)} en este momento.`);
       return;
     }
 
@@ -443,7 +439,7 @@ let talkToOrAboutX = (preposition, x) => {
       : character.topics;
 
     if (!topics.length && !Object.keys(topics).length) {
-      println(`You have nothing to discuss with ${getName(character.name)} at this time.`);
+      println(`No tienes nada que conversar con la entidad ${getName(character.name)} en este momento.`);
       return;
     }
 
@@ -453,7 +449,7 @@ let talkToOrAboutX = (preposition, x) => {
     listTopics(topics);
   } else if (preposition === 'about') {
     if (!disk.conversant) {
-      println(`You need to be in a conversation to talk about something.`);
+      println(`Debes estar en una conversación primero.`);
       return;
     }
     const character = eval(disk.conversant);
@@ -461,7 +457,7 @@ let talkToOrAboutX = (preposition, x) => {
       const response = x.toLowerCase();
       if (response === 'nothing') {
         endConversation();
-        println(`You end the conversation.`);
+        println(`Conversación terminada.`);
       } else if (disk.conversation && disk.conversation[response]) {
         disk.conversation[response].onSelected();
       } else {
@@ -477,8 +473,8 @@ let talkToOrAboutX = (preposition, x) => {
           // add the topic to the log
           character.chatLog.push(getKeywordFromTopic(topic));
         } else {
-          println(`You talk about ${removePunctuation(x)}.`);
-          println(`Type the capitalized KEYWORD to select a topic.`);
+          println(`Hablas sobre ${removePunctuation(x)}.`);
+          println(`Escribe el tema en MAYÚSCULAS para conversar.`);
         }
       }
 
@@ -490,7 +486,7 @@ let talkToOrAboutX = (preposition, x) => {
         listTopics(character);
       }
     } else {
-      println(`That person is no longer available for conversation.`);
+      println(`La entidad no está disponible.`);
       disk.conversant = undefined;
       disk.conversation = undefined;
     }
@@ -503,11 +499,11 @@ let take = () => {
   const items = (room.items || []).filter(item => item.isTakeable && !item.isHidden);
 
   if (!items.length) {
-    println(`There's nothing to take.`);
+    println(`No hay bloques de datos guardables.`);
     return;
   }
 
-  println(`The following items can be taken:`);
+  println(`Los siguientes bloques de datos son guardables:`);
   items.forEach(item => println(`${bullet} ${getName(item.name)}`));
 };
 
@@ -527,21 +523,21 @@ let takeItem = (itemName) => {
       if (typeof item.onTake === 'function') {
         item.onTake({disk, println, room, getRoom, enterRoom, item});
       } else {
-        println(`You took the ${getName(item.name)}.`);
+        println(`Tomas el bloque de datos "${getName(item.name)}".`);
       }
     } else {
       if (typeof item.onTake === 'function') {
         item.onTake({disk, println, room, getRoom, enterRoom, item});
       } else {
-        println(item.block || `You can't take that.`);
+        println(item.block || `No puede ser guardado.`);
       }
     }
   } else {
     itemIndex = disk.inventory.findIndex(findItem);
     if (typeof itemIndex === 'number' && itemIndex > -1) {
-      println(`You already have that.`);
+      println(`Ya lo tienes.`);
     } else {
-      println(`You don't see any such thing.`);
+      println(`No existe en este nodo. Comprueba el nombre.`);
     }
   }
 };
@@ -555,11 +551,11 @@ let use = () => {
     .filter(item => item.onUse && !item.isHidden);
 
   if (!useableItems.length) {
-    println(`There's nothing to use.`);
+    println(`No hay nada que usar.`);
     return;
   }
 
-  println(`The following items can be used:`);
+  println(`Los siguientes bloques de datos pueden usarse:`);
   useableItems.forEach((item) => {
     println(`${bullet} ${getName(item.name)}`)
   });
@@ -571,7 +567,7 @@ let useItem = (itemName) => {
   const item = getItemInInventory(itemName) || getItemInRoom(itemName, disk.roomId);
 
   if (!item) {
-    println(`You don't have that.`);
+    println(`No lo posees.`);
     return;
   }
 
@@ -582,7 +578,7 @@ let useItem = (itemName) => {
   }
 
   if (!item.onUse) {
-    println(`That item doesn't have a use.`);
+    println(`Ese bloque de datos no puede activarse.`);
     return;
   }
 
@@ -601,11 +597,11 @@ let items = () => {
   const items = (room.items || []).filter(item => !item.isHidden);
 
   if (!items.length) {
-    println(`There's nothing here.`);
+    println(`No hay nada aquí.`);
     return;
   }
 
-  println(`You see the following:`);
+  println(`Observas lo siguiente:`);
   items
     .forEach(item => println(`${bullet} ${getName(item.name)}`));
 }
@@ -616,39 +612,40 @@ let chars = () => {
   const chars = getCharactersInRoom(room.id).filter(char => !char.isHidden)
 
   if (!chars.length) {
-    println(`There's no one here.`);
+    println(`No hay entidades en este nodo.`);
     return;
   }
 
-  println(`You see the following:`);
+  println(`Observas lo siguiente:`);
   chars
     .forEach(char => println(`${bullet} ${getName(char.name)}`));
 };
 
 // display help menu
 let help = () => {
-  const instructions = `The following commands are available:
-    LOOK:           'look at key'
-    TAKE:           'take book'
-    GO:             'go north'
-    USE:            'use door'
-    TALK:           'talk to mary'
-    ITEMS:          list items in the room
-    CHARS:          list characters in the room
-    INV:            list inventory items
-    SAVE/LOAD:      save current game, or load a saved game (in memory)
-    IMPORT/EXPORT:  save current game, or load a saved game (on disk)
-    HELP:   this help menu
+  const instructions = `Comandos disponibles:
+    LOOK:           'observar el entorno'
+    TAKE:           'tomar bloque de datos'
+    GO:             'viajar a otro nodo'
+    USE:            'activar un bloque de datos'
+    TALK:           'conversar con entidad'
+    ITEMS:          lista de bloques de datos (items) en el nodo
+    CHARS:          lista de entidades en el nodo
+    INV:            lista de inventario de bloques de datos
+    SAY             comunicación entrante
+    SAVE/LOAD:      guardar/cargar el progreso de la investigación (en memoria)
+    IMPORT/EXPORT:  cargar/guardar el progreso de la investigación (en disco)
+    HELP:   este menú de ayuda
   `;
   println(instructions);
 };
 
 // handle say command with no args
-let say = () => println([`Say what?`, `You don't say.`]);
+let say = () => println([`No he entendido.`, `ERROR: al analizar la secuencia.`]);
 
 // say the passed string
 // string -> nothing
-let sayString = (str) => println(`You say ${removePunctuation(str)}.`);
+let sayString = (str) => println(`Comunicación entrante: ${removePunctuation(str)}.`);
 
 // retrieve user input (remove whitespace at beginning or end)
 // nothing -> string
@@ -742,43 +739,43 @@ let applyInput = (input) => {
     if (cmd) {
       cmd(arg);
     } else if (disk.conversation) {
-      println(`Type the capitalized KEYWORD to select a topic.`);
+      println(`Escribe la palabra en MAYÚSCULAS para seleccionar.`);
     } else {
-      println(`Sorry, I didn't understand your input. For a list of available commands, type HELP.`);
+      println(`ERROR: comando no válido. Escribe **HELP** para recibir una lista de comandos.`);
     }
   };
 
-  let values = val.split(' ')
+  let args = val.split(' ')
 
   // remove articles
   // (except for the say command, which prints back what the user said)
   // (and except for meta commands to allow save names such as 'a')
-  if (values[0] !== 'say' && isNotSaveLoad(values[0])) {
-    values = values.filter(arg => arg !== 'a' && arg !== 'an' && arg != 'the');
+  if (args[0] !== 'say' && isNotSaveLoad(args[0])) {
+    args = args.filter(arg => arg !== 'a' && arg !== 'an' && arg != 'the');
   }
 
-  const [command, ...args] = values;
+  const [command, ...arguments] = args;
   const room = getRoom(disk.roomId);
 
-  if (args.length === 1) {
-    exec(commands[1][command], args[0]);
-  } else if (command === 'take' && args.length) {
+  if (arguments.length === 1) {
+    exec(commands[1][command], arguments[0]);
+  } else if (command === 'take' && arguments.length) {
     // support for taking items with spaces in the names
     // (just tries to match on the first word)
-    takeItem(args[0]);
-  } else if (command === 'use' && args.length) {
+    takeItem(arguments[0]);
+  } else if (command === 'use' && arguments.length) {
     // support for using items with spaces in the names
     // (just tries to match on the first word)
-    useItem(args[0]);
-  } else if (args.length >= commands.length) {
-    exec(commands[commands.length - 1][command], args);
+    useItem(arguments[0]);
+  } else if (arguments.length >= commands.length) {
+    exec(commands[commands.length - 1][command], arguments);
   } else if (room.exits && getExit(command, room.exits)) {
     // handle shorthand direction command, e.g. "EAST" instead of "GO EAST"
     goDir(command);
   } else if (disk.conversation && (disk.conversation[command] || conversationIncludesTopic(disk.conversation, command))) {
     talkToOrAboutX('about', command);
   } else {
-    exec(commands[args.length][command], args);
+    exec(commands[arguments.length][command], arguments);
   }
 };
 
@@ -813,7 +810,7 @@ let println = (line, className) => {
     return;
   }
 
-  let str =
+  str =
     // if this is an array of lines, pick one at random
     Array.isArray(line) ? pickOne(line)
     // if this is a method returning a string, evaluate it
@@ -964,7 +961,7 @@ let enterRoom = (id) => {
   const room = getRoom(id);
 
   if (!room) {
-    println(`That exit doesn't seem to go anywhere.`);
+    println(`El nodo no tiene salida en ese lado.`);
     return;
   }
 
